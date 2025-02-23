@@ -24,8 +24,15 @@ jobs:
         distribution: 'temurin'
         cache: gradle
 
-    - name: Grant execute permission for gradlew
-      run: chmod +x gradlew
+    # 添加 Gradle Wrapper 设置步骤
+    - name: Setup Gradle Wrapper
+      run: |
+        mkdir -p gradle/wrapper
+        echo "distributionUrl=https\://services.gradle.org/distributions/gradle-8.2-bin.zip" > gradle/wrapper/gradle-wrapper.properties
+        wget -P gradle/wrapper https://github.com/gradle/gradle/raw/master/gradle/wrapper/gradle-wrapper.jar
+        wget https://raw.githubusercontent.com/gradle/gradle/master/gradlew -O gradlew
+        wget https://raw.githubusercontent.com/gradle/gradle/master/gradlew.bat -O gradlew.bat
+        chmod +x gradlew
 
     - name: Build with Gradle
       run: ./gradlew assembleRelease
