@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>剪贴板分离器</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+        .toast.show {
+            opacity: 1;
+        }
+        .entry-box {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s ease-out;
+        }
+        .entry-box.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <!-- Toast 提示 -->
+    <div id="toast" class="toast">复制成功！</div>
+
+    <!-- 头部信息 -->
+    <div class="max-w-4xl mx-auto p-4">
+        <div class="flex justify-between text-sm text-gray-600 mb-4">
+            <div id="dateTime">UTC: 2025-02-21 13:03:08</div>
+            <div id="userLogin">用户: map9876543</div>
+        </div>
+
+        <!-- 内容展示区 -->
+        <div id="entriesContainer" class="space-y-2 mb-32">
+            <!-- 条目将在这里动态添加 -->
+        </div>
+
+        <!-- 固定的输入区 -->
+        <div class="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg">
+            <div class="max-w-4xl mx-auto p-4">
+                <textarea
+                    id="inputArea"
+                    class="w-full h-24 p-4 border rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="输入或粘贴内容，将自动分离..."
+                ></textarea>
+                <div class="flex justify-end mt-2">
+                    <button
+                        id="copyButton"
+                        class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg transition-colors"
+                    >
+                        复制全部
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const entriesContainer = document.getElementById('entriesContainer');
+            const inputArea = document.getElementById('inputArea');
+            const copyButton = document.getElementById('copyButton');
+            const toast = document.getElementById('toast');
+            const entries = [];
+            const separator = '=========这里是分割线=========';
+
+            // 显示 Toast 提示
+            function showToast(message, duration = 2000) {
+                toast.textContent = message;
+                toast.classList.add('show');
+                setTimeout(() => toast.classList.remove('show'), duration);
+            }
+
+            // 复制方法1：使用 execCommand
+            function copyToClipboard(text) {
+                const textarea = document.createElement('textarea');
+                textarea.value = text;
+                textarea.style.position = 'fixed';
+                textarea.style.left = '-9999px';
+                document.body.appendChild(textarea);
+                textarea.select();
+                try {
+                    document.execCommand('copy');
+                    document.body.removeChild(textarea);
+                    showToast('复制成功！');
+                    return true;
+                } catch (err) {
+                    document.body.removeChild(textarea);
+                    showToast('复制失败，请重试');
+                    return false;
+                }
+            }
+
+            // 创建新条目
+            function createEntry(text) {
+                const entry = document.createElement('div');
+                entry.className = 'entry-box bg-white p-4 rounded-lg shadow';
+                entry.textContent = text;
+                entriesContainer.insertBefore(entry, entriesContainer.firstChild);
+                
+                // 触发动画
+                requestAnimationFrame(() => {
+                    entry.classList.add('show');
+                });
+            }
+
+            // 处理输入
+            function processInput() {
+                const text = inputArea.value.trim();
+                if (text) {
+                    entries.push(text);
+                    createEntry(text);
+                    inputArea.value = '';
+                }
+            }
+
+            // 输入事件监听
+            inputArea.addEventListener('input', (e) => {
+                if (e.inputType === 'insertText' || e.inputType === 'insertFromPaste') {
+                    processInput();
+                }
+            });
+
+            // Enter 键处理
+            inputArea.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    processInput();
+                }
+            });
+
+            // 复制按钮点击事件
+            copyButton.addEventListener('click', () => {
+                if (entries.length === 0) {
+                    showToast('没有可复制的内容！');
+                    return;
+                }
+                const textToCopy = entries.reverse().join(`\n${separator}\n`);
+                copyToClipboard(textToCopy);
+            });
+
+            // 自动聚焦输入框
+            inputArea.focus();
+        });
+    </script>
+</body>
+</html>

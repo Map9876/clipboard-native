@@ -1,0 +1,21 @@
+clipboard-native/
+├── .github/
+│   └── workflows/
+│       └── android.yml
+├── app/
+│   ├── src/
+│   │   └── main/
+│   │       ├── java/com/clipboard/
+│   │       │   ├── MainActivity.kt
+│   │       │   └── ui/
+│   │       │       └── theme/
+│   │       │           └── Theme.kt
+│   │       ├── res/
+│   │       │   ├── layout/
+│   │       │   ├── values/
+│   │       │   └── drawable/
+│   │       └── AndroidManifest.xml
+│   └── build.gradle
+├── build.gradle
+├── gradle.properties
+└── settings.gradle
